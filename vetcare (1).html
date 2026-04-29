@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VetCare App</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{min-height:100vh;background:#f4f7f5;font-family:'Segoe UI',sans-serif;}
+
+  .screen{display:none;flex-direction:column;min-height:100vh;}
+  .screen.active{display:flex;}
+
+  .inner{max-width:600px;width:100%;margin:0 auto;flex:1;display:flex;flex-direction:column;}
+  .scroll-area{flex:1;overflow-y:auto;padding:16px 20px;}
+  .scroll-area::-webkit-scrollbar{width:4px;}
+  .scroll-area::-webkit-scrollbar-thumb{background:#ccc;border-radius:4px;}
+
+  /* BOTTOM NAV */
+  .bottom-nav{background:#fff;border-top:1px solid #e5e7eb;display:flex;position:sticky;bottom:0;}
+  .bottom-nav-inner{max-width:600px;width:100%;margin:0 auto;display:flex;padding:10px 0 8px;}
+  .nav-btn{flex:1;background:none;border:none;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:2px;}
+  .nav-btn .icon{font-size:20px;}
+  .nav-btn .label{font-size:11px;color:#9ca3af;font-weight:400;}
+  .nav-btn.active .label{color:#1a7a4a;font-weight:700;}
+
+  /* PAGE HEADER */
+  .page-header{background:#fff;border-bottom:1px solid #f0f0f0;position:sticky;top:0;z-index:10;}
+  .page-header-inner{max-width:600px;width:100%;margin:0 auto;display:flex;align-items:center;padding:20px 20px 14px;}
+  .page-title{font-weight:700;font-size:18px;flex:1;text-align:center;}
+  .back-btn{background:none;border:none;font-size:24px;cursor:pointer;width:36px;line-height:1;}
+
+  /* SPLASH */
+  #splash{background:linear-gradient(160deg,#1a7a4a 0%,#0d4a2e 100%);}
+  #splash .inner{align-items:center;justify-content:center;text-align:center;padding:40px 32px;gap:20px;}
+  .paw-box{width:100px;height:100px;background:rgba(255,255,255,0.15);border-radius:28px;display:flex;align-items:center;justify-content:center;font-size:52px;}
+  .splash-title{font-size:42px;font-weight:800;color:#fff;letter-spacing:-1px;}
+  .splash-sub{font-size:16px;color:rgba(255,255,255,0.75);line-height:1.6;}
+  .btn-start{background:#fff;color:#1a7a4a;border:none;border-radius:50px;padding:16px 70px;font-weight:700;font-size:17px;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,0.2);}
+  .btn-start:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,0.25);}
+  .terms{font-size:12px;color:rgba(255,255,255,0.45);}
+
+  /* HOME HEADER */
+  .home-header{background:linear-gradient(135deg,#1a7a4a 0%,#2d9e5f 100%);padding:28px 20px 22px;}
+  .home-header-inner{max-width:600px;margin:0 auto;}
+  .home-top{display:flex;justify-content:space-between;align-items:center;}
+  .greeting-sm{font-size:14px;color:rgba(255,255,255,0.75);}
+  .greeting-name{font-size:26px;font-weight:800;color:#fff;}
+  .avatar{width:44px;height:44px;background:rgba(255,255,255,0.2);border-radius:22px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;font-size:18px;}
+  .search-bar{margin-top:16px;background:rgba(255,255,255,0.15);border-radius:12px;padding:11px 16px;display:flex;align-items:center;gap:10px;cursor:pointer;}
+
+  /* CARDS */
+  .section-label{font-size:11px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-bottom:10px;margin-top:4px;}
+  .pet-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,0.05);}
+  .pet-icon{width:48px;height:48px;background:linear-gradient(135deg,#22c55e,#1a7a4a);border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;}
+  .pet-name{font-weight:700;font-size:16px;}
+  .pet-breed{font-size:13px;color:#6b7280;}
+  .pet-visit{font-size:12px;color:#9ca3af;}
+  .quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+  .qa-btn{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px 14px;text-align:center;cursor:pointer;transition:all 0.15s;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .qa-btn:hover{background:#f0fdf4;border-color:#22c55e;transform:translateY(-1px);}
+  .qa-icon{font-size:30px;margin-bottom:8px;}
+  .qa-label{font-weight:700;font-size:14px;color:#111;}
+  .qa-sub{font-size:12px;color:#9ca3af;margin-top:2px;}
+  .qa-btn-full{width:100%;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px 14px;text-align:center;cursor:pointer;margin-bottom:18px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .qa-btn-full:hover{background:#f0fdf4;border-color:#22c55e;}
+  .upcoming-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .badge-soon{background:#fef9c3;color:#854d0e;font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px;white-space:nowrap;}
+  .badge-upcoming{background:#fef9c3;color:#854d0e;font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px;}
+  .badge-completed{background:#f0fdf4;color:#15803d;font-size:11px;font-weight:700;border-radius:8px;padding:4px 10px;}
+
+  /* SERVICES */
+  .svc-card{display:flex;align-items:center;background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:14px 16px;margin-bottom:12px;gap:14px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .svc-icon{width:46px;height:46px;background:linear-gradient(135deg,#22c55e,#1a7a4a);border-radius:13px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+  .svc-name{font-weight:700;font-size:15px;}
+  .svc-desc{font-size:12px;color:#6b7280;margin-top:3px;}
+  .btn-book-now{margin-top:10px;background:#1a7a4a;color:#fff;border:none;border-radius:8px;padding:7px 20px;font-weight:700;font-size:13px;cursor:pointer;}
+  .btn-book-now:hover{background:#15603a;}
+  .svc-price{font-weight:800;color:#1a7a4a;font-size:14px;flex-shrink:0;}
+
+  /* BOOK */
+  .stepper{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 20px 0;max-width:600px;margin:0 auto;width:100%;}
+  .step-circle{width:32px;height:32px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;color:#9ca3af;background:#e5e7eb;transition:all 0.2s;}
+  .step-circle.done{background:#1a7a4a;color:#fff;}
+  .step-line{width:60px;height:2px;background:#e5e7eb;border-radius:2px;transition:all 0.2s;}
+  .step-line.done{background:#1a7a4a;}
+  .field-label{font-size:12px;font-weight:700;color:#9ca3af;letter-spacing:1px;margin-top:14px;margin-bottom:8px;}
+  .vet-card{width:100%;background:#fff;border:2px solid #e5e7eb;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:12px;margin-bottom:10px;cursor:pointer;text-align:left;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+  .vet-card.selected{background:#f0fdf4;border-color:#1a7a4a;}
+  .vet-avatar{width:40px;height:40px;background:linear-gradient(135deg,#22c55e,#1a7a4a);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;}
+  .vet-name{font-weight:700;font-size:14px;}
+  .vet-spec{font-size:12px;color:#6b7280;}
+  .vet-rating{background:#fef9c3;color:#854d0e;font-weight:700;font-size:12px;border-radius:8px;padding:4px 10px;flex-shrink:0;}
+  .date-input{width:100%;border:1px solid #e5e7eb;border-radius:10px;padding:11px 14px;font-size:14px;outline:none;font-family:inherit;background:#fff;}
+  .date-input:focus{border-color:#1a7a4a;}
+  .time-grid{display:flex;flex-wrap:wrap;gap:10px;}
+  .time-btn{background:#fff;color:#374151;border:1px solid #e5e7eb;border-radius:10px;padding:9px 16px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.15s;}
+  .time-btn:hover{border-color:#1a7a4a;color:#1a7a4a;}
+  .time-btn.selected{background:#1a7a4a;color:#fff;border-color:#1a7a4a;}
+  .notes-input{width:100%;border:1px solid #e5e7eb;border-radius:10px;padding:11px 14px;font-size:14px;min-height:70px;resize:none;outline:none;font-family:inherit;background:#fff;}
+  .notes-input:focus{border-color:#1a7a4a;}
+  .btn-confirm{width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:16px;font-weight:800;font-size:17px;cursor:pointer;margin-top:18px;margin-bottom:24px;transition:all 0.15s;}
+  .btn-confirm:disabled{background:#d1d5db;cursor:not-allowed;}
+  .btn-confirm:not(:disabled):hover{background:#15603a;}
+
+  /* CONFIRMATION */
+  #confirm .inner{align-items:center;justify-content:center;padding:40px 28px;text-align:center;}
+  .check-circle{width:90px;height:90px;background:#f0fdf4;border-radius:45px;display:flex;align-items:center;justify-content:center;margin-bottom:22px;border:3px solid #1a7a4a;font-size:46px;}
+  .confirm-title{font-weight:800;font-size:28px;color:#111;margin-bottom:8px;}
+  .confirm-sub{font-size:15px;color:#6b7280;margin-bottom:30px;}
+  .summary-box{width:100%;background:#f9fafb;border:1px solid #e5e7eb;border-radius:18px;padding:22px;text-align:left;}
+  .summary-row{display:flex;justify-content:space-between;margin-bottom:14px;font-size:15px;}
+  .summary-row:last-child{margin-bottom:0;}
+  .summary-label{color:#6b7280;}
+  .summary-value{font-weight:700;color:#111;max-width:260px;text-align:right;}
+  .btn-view-history{width:100%;background:#1a7a4a;color:#fff;border:none;border-radius:14px;padding:16px;font-weight:700;font-size:16px;cursor:pointer;margin-top:22px;}
+  .btn-view-history:hover{background:#15603a;}
+  .btn-back-home{width:100%;background:#fff;color:#1a7a4a;border:2px solid #1a7a4a;border-radius:14px;padding:16px;font-weight:700;font-size:16px;cursor:pointer;margin-top:12px;}
+  .btn-back-home:hover{background:#f0fdf4;}
+
+  /* HISTORY */
+  .hist-card{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:16px;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,0.04);}
+  .hist-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;}
+  .hist-service{font-weight:700;font-size:16px;}
+  .hist-vet{font-size:14px;color:#6b7280;margin-bottom:3px;}
+  .hist-meta{font-size:13px;color:#9ca3af;}
+  .hist-note{font-size:13px;color:#6b7280;margin-top:5px;font-style:italic;}
+  .btn-reschedule{margin-top:12px;background:#fff;color:#1a7a4a;border:2px solid #1a7a4a;border-radius:9px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer;}
+  .btn-reschedule:hover{background:#f0fdf4;}
+  .btn-rebook{margin-top:12px;background:#1a7a4a;color:#fff;border:none;border-radius:9px;padding:7px 18px;font-weight:700;font-size:13px;cursor:pointer;}
+  .btn-rebook:hover{background:#15603a;}
+
+  /* MODAL */
+  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);display:none;align-items:flex-end;justify-content:center;z-index:200;}
+  .modal-overlay.show{display:flex;}
+  .modal-sheet{background:#fff;border-radius:24px 24px 0 0;padding:28px;width:100%;max-width:600px;}
+  .modal-title{font-weight:800;font-size:20px;margin-bottom:4px;}
+  .modal-sub{color:#6b7280;font-size:14px;margin-bottom:18px;}
+  .modal-actions{display:flex;gap:12px;margin-top:18px;}
+  .btn-cancel-modal{flex:1;background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;padding:14px;font-weight:700;cursor:pointer;font-size:15px;}
+  .btn-confirm-modal{flex:1;background:#1a7a4a;color:#fff;border:none;border-radius:12px;padding:14px;font-weight:700;cursor:pointer;font-size:15px;}
+  .btn-confirm-modal:hover{background:#15603a;}
+
+  /* SERVICE BANNER */
+  .svc-banner{max-width:600px;width:100%;margin:12px auto 0;padding:0 20px;}
+  .svc-banner-inner{background:#f0fdf4;border:1px solid #bbf7d0;border-radius:12px;padding:10px 14px;display:none;align-items:center;gap:10px;}
+  .svc-banner-inner.show{display:flex;}
+</style>
+</head>
+<body>
+
+<!-- ══ S1 SPLASH ════════════════════════════════════════════════════ -->
+<div class="screen active" id="splash">
+  <div class="inner">
+    <div class="paw-box">🐾</div>
+    <div>
+      <div class="splash-title">VetCare</div>
+      <div class="splash-sub">Your trusted companion for pet health<br>and veterinary services</div>
+    </div>
+    <button class="btn-start" onclick="go('home')">Get Started</button>
+    <div class="terms">By continuing you agree to our Terms of Service</div>
+  </div>
+</div>
+
+<!-- ══ S2 HOME ══════════════════════════════════════════════════════ -->
+<div class="screen" id="home">
+  <div class="home-header">
+    <div class="home-header-inner">
+      <div class="home-top">
+        <div>
+          <div class="greeting-sm">Good morning</div>
+          <div class="greeting-name">Najmi</div>
+        </div>
+        <div class="avatar">N</div>
+      </div>
+      <div class="search-bar">
+        <span>🔍</span>
+        <span style="color:rgba(255,255,255,0.7);font-size:15px">Search services, vets...</span>
+      </div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="inner" style="padding:0">
+      <div style="padding:16px 0">
+        <div class="section-label">YOUR PET</div>
+        <div class="pet-card">
+          <div class="pet-icon">🐕</div>
+          <div>
+            <div class="pet-name">Buddy</div>
+            <div class="pet-breed">Golden Retriever · 3 years old</div>
+            <div class="pet-visit">Last visit: 10 Mar 2025</div>
+          </div>
+        </div>
+        <div class="section-label">QUICK ACTIONS</div>
+        <div class="quick-grid">
+          <button class="qa-btn" onclick="go('services')">
+            <div class="qa-icon">🐾</div>
+            <div class="qa-label">Browse Services</div>
+            <div class="qa-sub">View all available</div>
+          </button>
+          <button class="qa-btn" onclick="openBook(null)">
+            <div class="qa-icon">📅</div>
+            <div class="qa-label">Book Appointment</div>
+            <div class="qa-sub">Schedule a visit</div>
+          </button>
+        </div>
+        <button class="qa-btn-full" onclick="go('history')">
+          <div class="qa-icon">📋</div>
+          <div class="qa-label">View History</div>
+          <div class="qa-sub">Past & upcoming</div>
+        </button>
+        <div class="section-label">UPCOMING APPOINTMENT</div>
+        <div class="upcoming-card">
+          <span style="font-size:24px">💉</span>
+          <div style="flex:1">
+            <div style="font-weight:700;font-size:15px">Vaccination</div>
+            <div style="font-size:13px;color:#6b7280">Tue, 22 Apr · 10:00 AM · Dr. Siti Rahimah</div>
+          </div>
+          <span class="badge-soon">Soon</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn active" onclick="go('home')"><span class="icon">🏠</span><span class="label">Home</span></button>
+      <button class="nav-btn" onclick="go('services')"><span class="icon">🐾</span><span class="label">Services</span></button>
+      <button class="nav-btn" onclick="go('history')"><span class="icon">📋</span><span class="label">History</span></button>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ S3 SERVICES ══════════════════════════════════════════════════ -->
+<div class="screen" id="services">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <button class="back-btn" onclick="go('home')">←</button>
+      <div class="page-title">Our Services</div>
+      <span style="font-size:22px;cursor:pointer">🔍</span>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="inner" style="padding:0">
+      <div style="padding:14px 0">
+        <div class="svc-card">
+          <div class="svc-icon">🩺</div>
+          <div style="flex:1">
+            <div class="svc-name">General Checkup</div>
+            <div class="svc-desc">Comprehensive health exam by licensed vets</div>
+            <button class="btn-book-now" onclick="openBook('General Checkup','🩺','RM 80')">Book Now</button>
+          </div>
+          <div class="svc-price">RM 80</div>
+        </div>
+        <div class="svc-card">
+          <div class="svc-icon">💉</div>
+          <div style="flex:1">
+            <div class="svc-name">Vaccination</div>
+            <div class="svc-desc">Core and non-core vaccine packages</div>
+            <button class="btn-book-now" onclick="openBook('Vaccination','💉','RM 60')">Book Now</button>
+          </div>
+          <div class="svc-price">RM 60</div>
+        </div>
+        <div class="svc-card">
+          <div class="svc-icon">✂️</div>
+          <div style="flex:1">
+            <div class="svc-name">Grooming</div>
+            <div class="svc-desc">Full bath, blow dry, trim, nail clip</div>
+            <button class="btn-book-now" onclick="openBook('Grooming','✂️','RM 50')">Book Now</button>
+          </div>
+          <div class="svc-price">RM 50</div>
+        </div>
+        <div class="svc-card">
+          <div class="svc-icon">🦷</div>
+          <div style="flex:1">
+            <div class="svc-name">Dental Cleaning</div>
+            <div class="svc-desc">Professional oral hygiene and scaling</div>
+            <button class="btn-book-now" onclick="openBook('Dental Cleaning','🦷','RM 120')">Book Now</button>
+          </div>
+          <div class="svc-price">RM 120</div>
+        </div>
+        <div class="svc-card">
+          <div class="svc-icon">🔬</div>
+          <div style="flex:1">
+            <div class="svc-name">Lab Tests</div>
+            <div class="svc-desc">Blood panel, urine analysis, parasite screen</div>
+            <button class="btn-book-now" onclick="openBook('Lab Tests','🔬','RM 150')">Book Now</button>
+          </div>
+          <div class="svc-price">RM 150</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn" onclick="go('home')"><span class="icon">🏠</span><span class="label">Home</span></button>
+      <button class="nav-btn active" onclick="go('services')"><span class="icon">🐾</span><span class="label">Services</span></button>
+      <button class="nav-btn" onclick="go('history')"><span class="icon">📋</span><span class="label">History</span></button>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ S4 BOOK ══════════════════════════════════════════════════════ -->
+<div class="screen" id="book">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <button class="back-btn" onclick="go('services')">←</button>
+      <div class="page-title">Book Appointment</div>
+      <div style="width:36px"></div>
+    </div>
+  </div>
+
+  <div class="stepper">
+    <div class="step-circle done" id="step1c">1</div>
+    <div class="step-line" id="step12l"></div>
+    <div class="step-circle" id="step2c">2</div>
+    <div class="step-line" id="step23l"></div>
+    <div class="step-circle" id="step3c">3</div>
+  </div>
+
+  <div class="svc-banner">
+    <div class="svc-banner-inner" id="selected-svc-banner">
+      <span id="svc-banner-icon" style="font-size:20px"></span>
+      <span id="svc-banner-name" style="font-weight:700;font-size:14px;color:#1a7a4a"></span>
+      <span id="svc-banner-price" style="margin-left:auto;font-size:13px;font-weight:700;color:#1a7a4a"></span>
+    </div>
+  </div>
+
+  <div class="scroll-area">
+    <div class="inner" style="padding:0">
+      <div style="padding:8px 0">
+        <div class="field-label">SELECT VET</div>
+        <div class="vet-card selected" id="vet-0" onclick="selectVet(0)">
+          <div class="vet-avatar">👨‍⚕️</div>
+          <div style="flex:1">
+            <div class="vet-name">Dr. Siti Rahimah</div>
+            <div class="vet-spec">Small Animal Specialist · 6 yrs exp</div>
+          </div>
+          <div class="vet-rating">⭐ 4.9</div>
+        </div>
+        <div class="vet-card" id="vet-1" onclick="selectVet(1)">
+          <div class="vet-avatar">👨‍⚕️</div>
+          <div style="flex:1">
+            <div class="vet-name">Dr. Amir Hasan</div>
+            <div class="vet-spec">General Practitioner · 4 yrs exp</div>
+          </div>
+          <div class="vet-rating">⭐ 4.7</div>
+        </div>
+        <div class="vet-card" id="vet-2" onclick="selectVet(2)">
+          <div class="vet-avatar">👨‍⚕️</div>
+          <div style="flex:1">
+            <div class="vet-name">Dr. Lim Wei</div>
+            <div class="vet-spec">Exotic Animal Specialist · 8 yrs exp</div>
+          </div>
+          <div class="vet-rating">⭐ 4.8</div>
+        </div>
+
+        <div class="field-label">ENTER DATE</div>
+        <input type="date" class="date-input" id="book-date" oninput="updateStepper()"/>
+
+        <div class="field-label">PICK A TIME</div>
+        <div class="time-grid" id="time-grid">
+          <button class="time-btn" onclick="selectTime(this,'9:00 AM')">9:00 AM</button>
+          <button class="time-btn" onclick="selectTime(this,'10:00 AM')">10:00 AM</button>
+          <button class="time-btn" onclick="selectTime(this,'11:00 AM')">11:00 AM</button>
+          <button class="time-btn" onclick="selectTime(this,'1:00 PM')">1:00 PM</button>
+          <button class="time-btn" onclick="selectTime(this,'2:00 PM')">2:00 PM</button>
+          <button class="time-btn" onclick="selectTime(this,'3:00 PM')">3:00 PM</button>
+          <button class="time-btn" onclick="selectTime(this,'4:00 PM')">4:00 PM</button>
+        </div>
+
+        <div class="field-label">NOTES (OPTIONAL)</div>
+        <textarea class="notes-input" id="book-notes" placeholder="e.g. Buddy has been sneezing..."></textarea>
+
+        <button class="btn-confirm" id="btn-confirm-booking" disabled onclick="confirmBooking()">Confirm Booking</button>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn" onclick="go('home')"><span class="icon">🏠</span><span class="label">Home</span></button>
+      <button class="nav-btn active" onclick="go('services')"><span class="icon">🐾</span><span class="label">Services</span></button>
+      <button class="nav-btn" onclick="go('history')"><span class="icon">📋</span><span class="label">History</span></button>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ S5 CONFIRMATION ══════════════════════════════════════════════ -->
+<div class="screen" id="confirm">
+  <div class="inner">
+    <div class="check-circle">✅</div>
+    <div class="confirm-title">Booking Confirmed!</div>
+    <div class="confirm-sub">Your appointment has been successfully booked.</div>
+    <div class="summary-box">
+      <div class="summary-row"><span class="summary-label">Service</span><span class="summary-value" id="conf-service">—</span></div>
+      <div class="summary-row"><span class="summary-label">Vet</span><span class="summary-value" id="conf-vet">—</span></div>
+      <div class="summary-row"><span class="summary-label">Date & Time</span><span class="summary-value" id="conf-datetime">—</span></div>
+      <div class="summary-row"><span class="summary-label">Pet</span><span class="summary-value">Buddy</span></div>
+    </div>
+    <button class="btn-view-history" onclick="go('history')">View Appointment History</button>
+    <button class="btn-back-home" onclick="go('home')">Back to Home</button>
+  </div>
+</div>
+
+<!-- ══ S6 HISTORY ════════════════════════════════════════════════════ -->
+<div class="screen" id="history">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <button class="back-btn" onclick="go('home')">←</button>
+      <div class="page-title">Appointment History</div>
+      <div style="width:36px"></div>
+    </div>
+  </div>
+  <div class="scroll-area">
+    <div class="inner" style="padding:0">
+      <div style="padding:14px 0">
+        <div class="hist-card">
+          <div class="hist-top">
+            <div class="hist-service">General Checkup</div>
+            <span class="badge-upcoming">Upcoming</span>
+          </div>
+          <div class="hist-vet">Dr. Siti Rahimah</div>
+          <div class="hist-meta">Mon 21 Apr · 10:00 AM · Buddy</div>
+          <button class="btn-reschedule" onclick="showModal()">Reschedule</button>
+        </div>
+        <div class="hist-card">
+          <div class="hist-top">
+            <div class="hist-service">Vaccination</div>
+            <span class="badge-completed">Completed</span>
+          </div>
+          <div class="hist-vet">Dr. Amir Hasan</div>
+          <div class="hist-meta">10 Mar 2025 · Buddy</div>
+          <div class="hist-note">Next due: Oct 2025</div>
+          <button class="btn-rebook" onclick="openBook('Vaccination','💉','RM 60')">Rebook</button>
+        </div>
+        <div class="hist-card">
+          <div class="hist-top">
+            <div class="hist-service">Grooming</div>
+            <span class="badge-completed">Completed</span>
+          </div>
+          <div class="hist-vet">Dr. Siti Rahimah</div>
+          <div class="hist-meta">22 Feb 2025 · Buddy</div>
+          <div class="hist-note">Duration: 1.5 hours</div>
+          <button class="btn-rebook" onclick="openBook('Grooming','✂️','RM 50')">Rebook</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn" onclick="go('home')"><span class="icon">🏠</span><span class="label">Home</span></button>
+      <button class="nav-btn" onclick="go('services')"><span class="icon">🐾</span><span class="label">Services</span></button>
+      <button class="nav-btn active" onclick="go('history')"><span class="icon">📋</span><span class="label">History</span></button>
+    </div>
+  </nav>
+</div>
+
+<!-- ══ RESCHEDULE MODAL ══════════════════════════════════════════════ -->
+<div class="modal-overlay" id="reschedule-modal">
+  <div class="modal-sheet">
+    <div class="modal-title">Reschedule Appointment</div>
+    <div class="modal-sub">General Checkup · Dr. Siti Rahimah</div>
+    <div class="field-label" style="margin-top:0">SELECT NEW DATE</div>
+    <input type="date" class="date-input" id="reschedule-date"/>
+    <div class="field-label">PICK A TIME</div>
+    <div class="time-grid">
+      <button class="time-btn" onclick="selectModalTime(this)">9:00 AM</button>
+      <button class="time-btn" onclick="selectModalTime(this)">10:00 AM</button>
+      <button class="time-btn" onclick="selectModalTime(this)">11:00 AM</button>
+      <button class="time-btn" onclick="selectModalTime(this)">1:00 PM</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel-modal" onclick="hideModal()">Cancel</button>
+      <button class="btn-confirm-modal" onclick="hideModal()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let selectedVetIndex = 0;
+  let selectedTime = '';
+  let currentService = { name: 'General Checkup', icon: '🩺', price: 'RM 80' };
+  const vetNames = ['Dr. Siti Rahimah', 'Dr. Amir Hasan', 'Dr. Lim Wei'];
+
+  function go(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+  }
+
+  function openBook(name, icon, price) {
+    const banner = document.getElementById('selected-svc-banner');
+    if (name) {
+      currentService = { name, icon, price };
+      banner.classList.add('show');
+      document.getElementById('svc-banner-icon').textContent = icon;
+      document.getElementById('svc-banner-name').textContent = name;
+      document.getElementById('svc-banner-price').textContent = price;
+    } else {
+      banner.classList.remove('show');
+      currentService = { name: 'General Checkup', icon: '🩺', price: 'RM 80' };
+    }
+    selectedVetIndex = 0;
+    selectedTime = '';
+    document.getElementById('book-date').value = '';
+    document.getElementById('book-notes').value = '';
+    document.querySelectorAll('#time-grid .time-btn').forEach(b => b.classList.remove('selected'));
+    document.querySelectorAll('.vet-card').forEach((c, i) => c.classList.toggle('selected', i === 0));
+    updateStepper();
+    go('book');
+  }
+
+  function selectVet(idx) {
+    selectedVetIndex = idx;
+    document.querySelectorAll('.vet-card').forEach((c, i) => c.classList.toggle('selected', i === idx));
+  }
+
+  function selectTime(btn, time) {
+    selectedTime = time;
+    document.querySelectorAll('#time-grid .time-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    updateStepper();
+  }
+
+  function updateStepper() {
+    const date = document.getElementById('book-date').value;
+    document.getElementById('step1c').classList.add('done');
+    document.getElementById('step2c').classList.toggle('done', !!date);
+    document.getElementById('step12l').classList.toggle('done', !!date);
+    document.getElementById('step3c').classList.toggle('done', !!selectedTime);
+    document.getElementById('step23l').classList.toggle('done', !!selectedTime);
+    document.getElementById('btn-confirm-booking').disabled = !(date && selectedTime);
+  }
+
+  function confirmBooking() {
+    const date = document.getElementById('book-date').value;
+    const fmt = date ? new Date(date + 'T00:00:00').toLocaleDateString('en-MY', { weekday:'short', day:'numeric', month:'short', year:'numeric' }) : '';
+    document.getElementById('conf-service').textContent = currentService.name;
+    document.getElementById('conf-vet').textContent = vetNames[selectedVetIndex];
+    document.getElementById('conf-datetime').textContent = fmt + ' · ' + selectedTime;
+    go('confirm');
+  }
+
+  function showModal() { document.getElementById('reschedule-modal').classList.add('show'); }
+  function hideModal() { document.getElementById('reschedule-modal').classList.remove('show'); }
+  function selectModalTime(btn) {
+    document.querySelectorAll('#reschedule-modal .time-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  }
+
+  document.getElementById('reschedule-modal').addEventListener('click', function(e) {
+    if (e.target === this) hideModal();
+  });
+</script>
+</body>
+</html>
